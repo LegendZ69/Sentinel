@@ -62,4 +62,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             updateGatekeeperUI(appState: AppState.shared)
         }
     }
+
+    // MARK: - File Opening
+
+    func application(_ sender: NSApplication, openFiles filenames: [String]) {
+        // Set multiDrop flag if more than one file
+        if filenames.count > 1 {
+            updateOnMain {
+                AppState.shared.multiDrop = true
+            }
+        }
+
+        // Process each dropped file
+        for filename in filenames {
+            guard FileManager.default.fileExists(atPath: filename) else {
+                printOS("File dropped on Dock icon doesn't exist: \(filename)")
+                continue
+            }
+
+            let fileURL = URL(fileURLWithPath: filename)
+
+            guard fileURL.pathExtension == "app" else {
+                printOS("Dropped file is not an application bundle: \(filename)")
+                continue
+            }
+
+            // Process the file using existing logic
+            handleDeepLinkedApps(url: fileURL, appState: AppState.shared)
+        }
+    }
 }
